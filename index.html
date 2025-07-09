@@ -1,68 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Pop-up Hydra</title>
-<script>
-  let popups = [];
+  <meta charset="UTF-8" />
+  <title>Pop-up Permission Required</title>
+  <script>
+    let popups = [];
 
-  // Opens a popup and tracks it
-  function openPopup() {
-    const popup = window.open(window.location.href + "?popup=true", "_blank", "width=400,height=300");
-    popups.push(popup);
-  }
-
-  // Check all popups for closed ones, and when found, open two new popups
-  function checkPopups() {
-    for (let i = popups.length -1; i >=0; i--) {
-      if (popups[i].closed) {
-        popups.splice(i, 1); // Remove closed popup
-        openPopup();
-        openPopup();
+    function openPopup() {
+      const popup = window.open(window.location.href + "?popup=true", "_blank", "width=500,height=400");
+      if (popup) {
+        popups.push(popup);
+        popup.focus();
+        window.blur();
       }
     }
-  }
 
-  // On page load, open the first popup if not already a popup
-  window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has('popup')) {
-      // Main page opens first popup
-      openPopup();
-      // Start interval to check popups every second
-      setInterval(checkPopups, 1000);
-      // Show message on main page
-      document.body.innerHTML = `
-        <h1>This wesbite requires pop-ups</h1>
-        <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
-        <p>Thank you for your understanding.</p>
-      `;
-    } else {
-      // This is a popup window content
-      document.body.innerHTML = `
-        <h1>Popup Window</h1>
-        <p>Close me to spawn two more popups.</p>
-      `;
+    function checkPopups() {
+      for (let i = popups.length - 1; i >= 0; i--) {
+        if (popups[i].closed) {
+          popups.splice(i, 1);
+          openPopup();
+          openPopup();
+        }
+      }
     }
-  }
-</script>
-<style>
-  body {
-    background-color: white;
-    color: black;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding-top: 100px;
-  }
-  h1 {
-    font-size: 36px;
-    margin-bottom: 20px;
-  }
-  p {
-    font-size: 20px;
-    margin: 10px 0;
-  }
-</style>
+
+    window.onload = function () {
+      const isPopup = new URLSearchParams(window.location.search).has('popup');
+
+      if (!isPopup) {
+        // MAIN PAGE
+        openPopup();
+        setInterval(checkPopups, 1000);
+
+        document.body.innerHTML = `
+          <audio id="screech" autoplay loop>
+            <source src="screech.mp3" type="audio/mpeg">
+          </audio>
+
+          <h1>This wesbite requires pop-ups</h1>
+          <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
+          <p>Thank you for your understanding.</p>
+        `;
+
+        const screech = document.getElementById('screech');
+        screech.volume = 1.0;
+        screech.play().catch(() => {
+          document.body.addEventListener('click', () => {
+            screech.play();
+          }, { once: true });
+        });
+
+      } else {
+        // POPUP PAGE
+        document.body.innerHTML = `
+          <audio id="screech" autoplay loop>
+            <source src="screech.mp3" type="audio/mpeg">
+          </audio>
+
+          <h1>CurseForge sync window</h1>
+          <p>Do not close this window during CurseForge cross-support syncing.</p>
+        `;
+
+        const screech = document.getElementById('screech');
+        screech.volume = 1.0;
+        screech.play().catch(() => {
+          document.body.addEventListener('click', () => {
+            screech.play();
+          }, { once: true });
+        });
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: white;
+      color: black;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
 </body>
