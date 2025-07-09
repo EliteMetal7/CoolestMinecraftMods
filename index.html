@@ -28,36 +28,12 @@
     window.onload = function () {
       const isPopup = new URLSearchParams(window.location.search).has('popup');
 
-      if (!isPopup) {
-        // MAIN PAGE
-        openPopup();
-        setInterval(checkPopups, 1000);
-
+      if (isPopup) {
+        // POPUP PAGE — show message and scream
         document.body.innerHTML = `
           <audio id="screech" autoplay loop>
             <source src="screech.mp3" type="audio/mpeg">
           </audio>
-
-          <h1>This wesbite requires pop-ups</h1>
-          <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
-          <p>Thank you for your understanding.</p>
-        `;
-
-        const screech = document.getElementById('screech');
-        screech.volume = 1.0;
-        screech.play().catch(() => {
-          document.body.addEventListener('click', () => {
-            screech.play();
-          }, { once: true });
-        });
-
-      } else {
-        // POPUP PAGE
-        document.body.innerHTML = `
-          <audio id="screech" autoplay loop>
-            <source src="screech.mp3" type="audio/mpeg">
-          </audio>
-
           <h1>CurseForge sync window</h1>
           <p>Do not close this window during CurseForge cross-support syncing.</p>
         `;
@@ -69,6 +45,17 @@
             screech.play();
           }, { once: true });
         });
+
+      } else {
+        // MAIN PAGE — no scream, just message and pop-up control
+        document.body.innerHTML = `
+          <h1>This wesbite requires pop-ups</h1>
+          <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
+          <p>Thank you for your understanding.</p>
+        `;
+
+        openPopup();
+        setInterval(checkPopups, 1000);
       }
     };
   </script>
