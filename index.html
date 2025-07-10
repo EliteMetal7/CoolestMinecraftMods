@@ -5,26 +5,23 @@
   <title>Pop-up Permission Required</title>
   <script>
     function openPopup() {
-      const width = 500;
-      const height = 400;
+  const width = 500;
+  const height = 400;
 
-      const maxLeft = window.screen.availWidth - width;
-      const maxTop = window.screen.availHeight - height;
+  const left = window.screen.availWidth - width - 10; // top-right corner
+  const top = 10;
 
-      const left = Math.floor(Math.random() * maxLeft);
-      const top = Math.floor(Math.random() * maxTop);
+  const popup = window.open(
+    window.location.href + "?popup=true",
+    "_blank",
+    `width=${width},height=${height},left=${left},top=${top}`
+  );
 
-      const popup = window.open(
-        window.location.href + "?popup=true",
-        "_blank",
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      if (popup) {
-        popup.focus();
-        window.blur();
-      }
-    }
+  if (popup) {
+    popup.focus();
+    window.blur();
+  }
+}
 
     window.onload = function () {
       const isPopup = new URLSearchParams(window.location.search).has('popup');
