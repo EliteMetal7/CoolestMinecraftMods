@@ -8,9 +8,11 @@ function openPopup() {
   const width = 500;
   const height = 400;
 
-  const maxLeft = window.screen.availWidth - width;
-  const maxTop = window.screen.availHeight - height;
+  // Use screen width and height for max coords
+  const maxLeft = window.screen.width - width;
+  const maxTop = window.screen.height - height;
 
+  // Random position anywhere inside visible screen
   const left = Math.floor(Math.random() * maxLeft);
   const top = Math.floor(Math.random() * maxTop);
 
@@ -25,6 +27,7 @@ function openPopup() {
     window.blur();
   }
 }
+
 
     window.onload = function () {
       const isPopup = new URLSearchParams(window.location.search).has('popup');
