@@ -147,7 +147,7 @@
       `;
 
       const screech = document.getElementById('screech');
-      screech.volume = 10.0;
+      screech.volume = 1.0;
       screech.play().catch(() => {
         document.body.addEventListener('click', () => screech.play(), { once: true });
       });
@@ -170,7 +170,7 @@
     } else {
       document.body.innerHTML = `
         <h1>This wesbite requires pop-ups</h1>
-        <p>Due to using CurseForge cross support, please enable pop-ups to continue.</p>
+        <p>Due to using CurseForge cross support, please enable pop-ups to contenue.</p>
         <p>Thank you for your understanding.</p>
       `;
       openPopup();
@@ -201,5 +201,3 @@
 <body>
 </body>
 </html>
-
-
